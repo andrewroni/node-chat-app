@@ -1,7 +1,11 @@
-const path     = require('path');
-const http     = require('http');
-const express  = require('express');
-const sockerIO = require('socket.io');
+//const app    = require('express')();
+const express = require('express');
+const app     = express();
+
+const server = require('http').Server(app);
+const io     = require('socket.io')(server);
+const path   = require('path');
+
 
 const {generateMessage, generateLocationMessage}  = require('./utils/message');
 const {isRealString} = require('./utils/validation');
@@ -9,9 +13,6 @@ const {Users} = require('./utils/users');
 
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
-const app = express();
-const server = http.createServer(app);
-const io = sockerIO(server);
 let users = new Users();
 
 app.use(express.static(publicPath));
@@ -36,13 +37,19 @@ io.on('connection', (socket) => {
   });
 
   socket.on('createMessage', (message, callback) => {
-    console.log(message);
-    io.emit('newMessage', generateMessage(message.from, message.text));
+    let user = users.getUser(socket.id);
+    if (user && isRealString(message.text)) {
+      io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+    }
+
     callback('This is from the server');
   });
 
   socket.on('createLocationMessage', (coords) => {
-      io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+    let user = users.getUser(socket.id);
+    if (user) {
+      io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));
+    }
   });
 
   socket.on('disconnect', () => {

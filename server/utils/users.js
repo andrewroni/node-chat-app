@@ -1,14 +1,3 @@
-[{
-  id: '',
-  name: '',
-  room: ''
-}]
-
-// addUser(id, name, room)
-// removeUser(id)
-// getUser(id)
-// getUserList(room)
-
 class Users {
   constructor () {
     this.users = [];
@@ -38,15 +27,7 @@ class Users {
   }
 }
 
-
-
-
 module.exports = {Users};
-
-
-
-
-
 
 // class Person {
 //   constructor (name, age) {
